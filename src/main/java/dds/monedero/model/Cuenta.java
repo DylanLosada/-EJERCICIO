@@ -34,16 +34,22 @@ public class Cuenta {
   // TODO Long Method
   public void sacar(double cuanto) {
     validarQueNoSeaMenorOIgualAZero(cuanto);
-    if (getSaldo() - cuanto < 0) {
-      throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
-    }
+    validarQueNoExtraigaMasDeMiSaldoDisponible(cuanto);
+    validarQueNoExtraigaMasDelMontoPermitidoPorDia(cuanto);
+
+    Movimiento nuevoMovimiento = new Movimiento(LocalDate.now(), cuanto, false);
+    agregarMovimiento(nuevoMovimiento);
+  }
+
+  private void validarQueNoExtraigaMasDelMontoPermitidoPorDia(double cuanto) {
+    final int MONTO_MAXIMO_EXTRAIBLE_DIARIO = 1000;
     double montoExtraidoHoy = getMontoExtraidoA(LocalDate.now());
-    double limite = 1000 - montoExtraidoHoy;
+    double limite = MONTO_MAXIMO_EXTRAIBLE_DIARIO - montoExtraidoHoy;
+
     if (cuanto > limite) {
       throw new MaximoExtraccionDiarioException("No puede extraer mas de $ " + 1000
           + " diarios, límite: " + limite);
     }
-    new Movimiento(LocalDate.now(), cuanto, false).agregateA(this);
   }
 
   // TODO Data Clumps (Esto deberia ser un movimineto) y Divergent Change (no es responsabilidad de Cuenta tener que instanciar un Movimiento)
@@ -85,5 +91,13 @@ public class Cuenta {
       throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
     }
   }
+
+  private void validarQueNoExtraigaMasDeMiSaldoDisponible(double cuanto) {
+    if (getSaldo() - cuanto < 0) {
+      throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
+    }
+  }
+
+
 
 }
