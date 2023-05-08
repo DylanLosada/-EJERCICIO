@@ -32,7 +32,6 @@ public class Movimiento {
   // TODO Feature Envy
   public void agregateA(Cuenta cuenta) {
     cuenta.setSaldo(calcularValor(cuenta));
-    cuenta.agregarMovimiento(fecha, monto, esDeposito);
   }
 
   // TODO Feature Envy

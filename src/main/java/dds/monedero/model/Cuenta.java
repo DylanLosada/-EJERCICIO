@@ -21,23 +21,19 @@ public class Cuenta {
     saldo = 0;
   }
 
+  private final int CANTIDAD_MOVIMIENTOS_PERMITIDOS = 3;
+
   public void poner(double cuanto) {
-    if (cuanto <= 0) {
-      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
-    }
+    validarQueNoSeaMenorOIgualAZero(cuanto);
+    validarQueNOExcedioLosMovimientosPermitidos();
 
-    if (getMovimientos().stream().filter(movimiento -> movimiento.isDeposito()).count() >= 3) {
-      throw new MaximaCantidadDepositosException("Ya excedio los " + 3 + " depositos diarios");
-    }
-
-    new Movimiento(LocalDate.now(), cuanto, true).agregateA(this);
+    Movimiento nuevoMovimiento = new Movimiento(LocalDate.now(), cuanto, true);
+    agregarMovimiento(nuevoMovimiento);
   }
 
   // TODO Long Method
   public void sacar(double cuanto) {
-    if (cuanto <= 0) {
-      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
-    }
+    validarQueNoSeaMenorOIgualAZero(cuanto);
     if (getSaldo() - cuanto < 0) {
       throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
     }
@@ -51,9 +47,8 @@ public class Cuenta {
   }
 
   // TODO Data Clumps (Esto deberia ser un movimineto) y Divergent Change (no es responsabilidad de Cuenta tener que instanciar un Movimiento)
-  public void agregarMovimiento(LocalDate fecha, double cuanto, boolean esDeposito) {
-    Movimiento movimiento = new Movimiento(fecha, cuanto, esDeposito);
-    movimientos.add(movimiento);
+  public void agregarMovimiento(Movimiento movientoAAgregar) {
+    movimientos.add(movientoAAgregar);
   }
 
   public double getMontoExtraidoA(LocalDate fecha) {
@@ -73,6 +68,22 @@ public class Cuenta {
 
   public void setSaldo(double saldo) {
     this.saldo = saldo;
+  }
+
+  private void validarQueNOExcedioLosMovimientosPermitidos() {
+    if (superoLosMovientosPermitidos()) {
+      throw new MaximaCantidadDepositosException("Ya excedio los " + CANTIDAD_MOVIMIENTOS_PERMITIDOS + " depositos diarios");
+    }
+  }
+
+  private boolean superoLosMovientosPermitidos() {
+    return getMovimientos().stream().filter(movimiento -> movimiento.isDeposito()).count() >= CANTIDAD_MOVIMIENTOS_PERMITIDOS;
+  }
+
+  private void validarQueNoSeaMenorOIgualAZero(double cuanto) {
+    if (cuanto <= 0) {
+      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
+    }
   }
 
 }
