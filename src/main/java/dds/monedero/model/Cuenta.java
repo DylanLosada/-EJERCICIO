@@ -11,19 +11,14 @@ import java.util.List;
 
 public class Cuenta {
 
+  // TODO Duplicate Code, en verdad es innecesario dado que lo estas haciendo en el constructor.
+  // por otro lado, deberia ser final, no cambio en ningun momento.
   private double saldo = 0;
+  // Ya que estamos realizando la configuracion del objeto en el costructor, deberiamos realizarlo con este atributo tambien.
   private List<Movimiento> movimientos = new ArrayList<>();
 
   public Cuenta() {
     saldo = 0;
-  }
-
-  public Cuenta(double montoInicial) {
-    saldo = montoInicial;
-  }
-
-  public void setMovimientos(List<Movimiento> movimientos) {
-    this.movimientos = movimientos;
   }
 
   public void poner(double cuanto) {
@@ -38,6 +33,7 @@ public class Cuenta {
     new Movimiento(LocalDate.now(), cuanto, true).agregateA(this);
   }
 
+  // TODO Long Method
   public void sacar(double cuanto) {
     if (cuanto <= 0) {
       throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
@@ -54,6 +50,7 @@ public class Cuenta {
     new Movimiento(LocalDate.now(), cuanto, false).agregateA(this);
   }
 
+  // TODO Data Clumps (Esto deberia ser un movimineto) y Divergent Change (no es responsabilidad de Cuenta tener que instanciar un Movimiento)
   public void agregarMovimiento(LocalDate fecha, double cuanto, boolean esDeposito) {
     Movimiento movimiento = new Movimiento(fecha, cuanto, esDeposito);
     movimientos.add(movimiento);
