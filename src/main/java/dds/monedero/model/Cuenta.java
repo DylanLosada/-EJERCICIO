@@ -1,5 +1,6 @@
 package dds.monedero.model;
 
+import dds.monedero.enums.TipoMovimineto;
 import dds.monedero.exceptions.MaximaCantidadDepositosException;
 import dds.monedero.exceptions.MaximoExtraccionDiarioException;
 import dds.monedero.exceptions.MontoNegativoException;
@@ -27,7 +28,7 @@ public class Cuenta {
     validarQueNoSeaMenorOIgualAZero(cuanto);
     validarQueNOExcedioLosMovimientosPermitidos();
 
-    Movimiento nuevoMovimiento = new Movimiento(LocalDate.now(), cuanto, true);
+    Movimiento nuevoMovimiento = new Movimiento(LocalDate.now(), cuanto, TipoMovimineto.DEPOSITO);
     agregarMovimiento(nuevoMovimiento);
   }
 
@@ -37,7 +38,7 @@ public class Cuenta {
     validarQueNoExtraigaMasDeMiSaldoDisponible(cuanto);
     validarQueNoExtraigaMasDelMontoPermitidoPorDia(cuanto);
 
-    Movimiento nuevoMovimiento = new Movimiento(LocalDate.now(), cuanto, false);
+    Movimiento nuevoMovimiento = new Movimiento(LocalDate.now(), cuanto, TipoMovimineto.EXTRACCION);
     agregarMovimiento(nuevoMovimiento);
   }
 
@@ -59,7 +60,7 @@ public class Cuenta {
 
   public double getMontoExtraidoA(LocalDate fecha) {
     return getMovimientos().stream()
-        .filter(movimiento -> !movimiento.isDeposito() && movimiento.getFecha().equals(fecha))
+        .filter(movimiento -> !movimiento.esDeposito() && movimiento.getFecha().equals(fecha))
         .mapToDouble(Movimiento::getMonto)
         .sum();
   }
@@ -83,7 +84,7 @@ public class Cuenta {
   }
 
   private boolean superoLosMovientosPermitidos() {
-    return getMovimientos().stream().filter(movimiento -> movimiento.isDeposito()).count() >= CANTIDAD_MOVIMIENTOS_PERMITIDOS;
+    return getMovimientos().stream().filter(Movimiento::esDeposito).count() >= CANTIDAD_MOVIMIENTOS_PERMITIDOS;
   }
 
   private void validarQueNoSeaMenorOIgualAZero(double cuanto) {
@@ -97,7 +98,5 @@ public class Cuenta {
       throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
     }
   }
-
-
 
 }

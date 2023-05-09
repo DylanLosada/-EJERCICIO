@@ -1,5 +1,6 @@
 package dds.monedero.model;
 
+import dds.monedero.enums.TipoMovimineto;
 import java.time.LocalDate;
 
 public class Movimiento {
@@ -9,12 +10,12 @@ public class Movimiento {
   // En su lugar siempre usen numeros de precision arbitraria o punto fijo, como BigDecimal en Java y similares
   // De todas formas, NO es necesario modificar ésto como parte de este ejercicio. 
   private double monto;
-  private boolean esDeposito;
+  private TipoMovimineto tipoMovimineto;
 
-  public Movimiento(LocalDate fecha, double monto, boolean esDeposito) {
+  public Movimiento(LocalDate fecha, double monto, TipoMovimineto tipoMovimineto) {
     this.fecha = fecha;
     this.monto = monto;
-    this.esDeposito = esDeposito;
+    this.tipoMovimineto = tipoMovimineto;
   }
 
   public double getMonto() {
@@ -25,21 +26,12 @@ public class Movimiento {
     return fecha;
   }
 
-  public boolean isDeposito() {
-    return esDeposito;
+  public TipoMovimineto getTipoMovimineto() {
+    return tipoMovimineto;
   }
 
-  // TODO Feature Envy
-  public void agregateA(Cuenta cuenta) {
-    cuenta.setSaldo(calcularValor(cuenta));
+  public boolean esDeposito() {
+    return TipoMovimineto.DEPOSITO.equals(getTipoMovimineto());
   }
 
-  // TODO Feature Envy
-  public double calcularValor(Cuenta cuenta) {
-    if (esDeposito) {
-      return cuenta.getSaldo() + getMonto();
-    } else {
-      return cuenta.getSaldo() - getMonto();
-    }
-  }
 }
