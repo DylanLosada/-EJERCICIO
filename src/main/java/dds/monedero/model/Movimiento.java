@@ -5,12 +5,12 @@ import java.time.LocalDate;
 
 public class Movimiento {
   // Todos los atributos deberian ser final.
-  private LocalDate fecha;
+  private final LocalDate fecha;
   // Nota: En ningún lenguaje de programación usen jamás doubles (es decir, números con punto flotante) para modelar dinero en el mundo real.
   // En su lugar siempre usen numeros de precision arbitraria o punto fijo, como BigDecimal en Java y similares
   // De todas formas, NO es necesario modificar ésto como parte de este ejercicio. 
-  private double monto;
-  private TipoMovimineto tipoMovimineto;
+  private final double monto;
+  private final TipoMovimineto tipoMovimineto;
 
   public Movimiento(LocalDate fecha, double monto, TipoMovimineto tipoMovimineto) {
     this.fecha = fecha;

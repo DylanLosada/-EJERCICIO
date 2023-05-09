@@ -25,7 +25,7 @@ public class Cuenta {
   private final int CANTIDAD_MOVIMIENTOS_PERMITIDOS = 3;
 
   public void poner(double cuanto) {
-    validarQueNoSeaMenorOIgualAZero(cuanto);
+    validarQueNoSeaMenorOIgualACero(cuanto);
     validarQueNOExcedioLosMovimientosPermitidos();
 
     Movimiento nuevoMovimiento = new Movimiento(LocalDate.now(), cuanto, TipoMovimineto.DEPOSITO);
@@ -34,7 +34,7 @@ public class Cuenta {
 
   // TODO Long Method
   public void sacar(double cuanto) {
-    validarQueNoSeaMenorOIgualAZero(cuanto);
+    validarQueNoSeaMenorOIgualACero(cuanto);
     validarQueNoExtraigaMasDeMiSaldoDisponible(cuanto);
     validarQueNoExtraigaMasDelMontoPermitidoPorDia(cuanto);
 
@@ -48,12 +48,10 @@ public class Cuenta {
     double limite = MONTO_MAXIMO_EXTRAIBLE_DIARIO - montoExtraidoHoy;
 
     if (cuanto > limite) {
-      throw new MaximoExtraccionDiarioException("No puede extraer mas de $ " + 1000
-          + " diarios, límite: " + limite);
+      throw MaximoExtraccionDiarioException.superoElLimiteDeDineroExtraidoDiario(CANTIDAD_MOVIMIENTOS_PERMITIDOS, limite);
     }
   }
 
-  // TODO Data Clumps (Esto deberia ser un movimineto) y Divergent Change (no es responsabilidad de Cuenta tener que instanciar un Movimiento)
   public void agregarMovimiento(Movimiento movientoAAgregar) {
     movimientos.add(movientoAAgregar);
   }
@@ -79,7 +77,7 @@ public class Cuenta {
 
   private void validarQueNOExcedioLosMovimientosPermitidos() {
     if (superoLosMovientosPermitidos()) {
-      throw new MaximaCantidadDepositosException("Ya excedio los " + CANTIDAD_MOVIMIENTOS_PERMITIDOS + " depositos diarios");
+      throw MaximaCantidadDepositosException.superoElLimiteDeDepositosDiarios(CANTIDAD_MOVIMIENTOS_PERMITIDOS);
     }
   }
 
@@ -87,15 +85,15 @@ public class Cuenta {
     return getMovimientos().stream().filter(Movimiento::esDeposito).count() >= CANTIDAD_MOVIMIENTOS_PERMITIDOS;
   }
 
-  private void validarQueNoSeaMenorOIgualAZero(double cuanto) {
+  private void validarQueNoSeaMenorOIgualACero(double cuanto) {
     if (cuanto <= 0) {
-      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
+      throw MontoNegativoException.elMontoNoPuedeSerNegativoOMenorQueCero(cuanto);
     }
   }
 
   private void validarQueNoExtraigaMasDeMiSaldoDisponible(double cuanto) {
     if (getSaldo() - cuanto < 0) {
-      throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
+      throw SaldoMenorException.saldoInsuficiente(getSaldo());
     }
   }
 
