@@ -1,9 +1,9 @@
 package dds.monedero.model;
 
 import dds.monedero.enums.TipoMovimineto;
-import dds.monedero.exceptions.MaximaCantidadDepositosException;
+import dds.monedero.exceptions.MaximaCantidadMovimientosDiariosException;
 import dds.monedero.exceptions.MaximoExtraccionDiarioException;
-import dds.monedero.exceptions.MontoNegativoException;
+import dds.monedero.exceptions.MontoNegativoOCeroException;
 import dds.monedero.exceptions.SaldoMenorException;
 
 import java.time.LocalDate;
@@ -11,35 +11,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Cuenta {
-
-  // TODO Duplicate Code, en verdad es innecesario dado que lo estas haciendo en el constructor.
-  // por otro lado, deberia ser final, no cambio en ningun momento.
-  private double saldo = 0;
+  private final int CANTIDAD_MOVIMIENTOS_PERMITIDOS = 3;
+  private double saldo;
   // Ya que estamos realizando la configuracion del objeto en el costructor, deberiamos realizarlo con este atributo tambien.
-  private List<Movimiento> movimientos = new ArrayList<>();
+  private final List<Movimiento> movimientos;
 
   public Cuenta() {
+    movimientos = new ArrayList<>();
     saldo = 0;
   }
 
-  private final int CANTIDAD_MOVIMIENTOS_PERMITIDOS = 3;
-
-  public void poner(double cuanto) {
-    validarQueNoSeaMenorOIgualACero(cuanto);
+  public void agregarSaldo(double saldoASumar) {
     validarQueNOExcedioLosMovimientosPermitidos();
+    validarQueNoSeaMenorOIgualACero(saldoASumar);
 
-    Movimiento nuevoMovimiento = new Movimiento(LocalDate.now(), cuanto, TipoMovimineto.DEPOSITO);
+    Movimiento nuevoMovimiento = new Movimiento(LocalDate.now(), saldoASumar, TipoMovimineto.DEPOSITO);
     agregarMovimiento(nuevoMovimiento);
+    sumarSaldo(saldoASumar);
   }
 
-  // TODO Long Method
-  public void sacar(double cuanto) {
-    validarQueNoSeaMenorOIgualACero(cuanto);
-    validarQueNoExtraigaMasDeMiSaldoDisponible(cuanto);
-    validarQueNoExtraigaMasDelMontoPermitidoPorDia(cuanto);
+  public void sacarSaldo(double saldoASacar) {
+    validarQueNOExcedioLosMovimientosPermitidos();
+    validarQueNoSeaMenorOIgualACero(saldoASacar);
+    validarQueNoExtraigaMasDelMontoPermitidoPorDia(saldoASacar);
+    validarQueNoExtraigaMasDeMiSaldoDisponible(saldoASacar);
 
-    Movimiento nuevoMovimiento = new Movimiento(LocalDate.now(), cuanto, TipoMovimineto.EXTRACCION);
+    Movimiento nuevoMovimiento = new Movimiento(LocalDate.now(), saldoASacar, TipoMovimineto.EXTRACCION);
     agregarMovimiento(nuevoMovimiento);
+    restarSaldo(saldoASacar);
   }
 
   private void validarQueNoExtraigaMasDelMontoPermitidoPorDia(double cuanto) {
@@ -67,34 +66,38 @@ public class Cuenta {
     return movimientos;
   }
 
-  public double getSaldo() {
+  public double miSaldo() {
     return saldo;
-  }
-
-  public void setSaldo(double saldo) {
-    this.saldo = saldo;
   }
 
   private void validarQueNOExcedioLosMovimientosPermitidos() {
     if (superoLosMovientosPermitidos()) {
-      throw MaximaCantidadDepositosException.superoElLimiteDeDepositosDiarios(CANTIDAD_MOVIMIENTOS_PERMITIDOS);
+      throw MaximaCantidadMovimientosDiariosException.superoElLimiteDeDepositosDiarios(CANTIDAD_MOVIMIENTOS_PERMITIDOS);
     }
   }
 
   private boolean superoLosMovientosPermitidos() {
-    return getMovimientos().stream().filter(Movimiento::esDeposito).count() >= CANTIDAD_MOVIMIENTOS_PERMITIDOS;
+    return getMovimientos().size() == CANTIDAD_MOVIMIENTOS_PERMITIDOS;
   }
 
   private void validarQueNoSeaMenorOIgualACero(double cuanto) {
     if (cuanto <= 0) {
-      throw MontoNegativoException.elMontoNoPuedeSerNegativoOMenorQueCero(cuanto);
+      throw MontoNegativoOCeroException.elMontoNoPuedeSerNegativoOMenorQueCero(cuanto);
     }
   }
 
   private void validarQueNoExtraigaMasDeMiSaldoDisponible(double cuanto) {
-    if (getSaldo() - cuanto < 0) {
-      throw SaldoMenorException.saldoInsuficiente(getSaldo());
+    if (miSaldo() - cuanto < 0) {
+      throw SaldoMenorException.saldoInsuficiente(miSaldo());
     }
+  }
+
+  private void sumarSaldo(Double saldoASumar) {
+    saldo += saldoASumar;
+  }
+
+  private void restarSaldo(Double saldoARestar) {
+    saldo -= saldoARestar;
   }
 
 }
